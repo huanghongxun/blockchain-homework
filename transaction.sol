@@ -233,15 +233,11 @@ contract Transaction18 {
     // 或者 debtor 公司向 debtee 银行借款（将 debtor 的信用转移给银行表示融资）
     // 或者 debtor 银行向 debtee 公司提供信用凭证
     // debtor=msg.sender
-    function transferCredit(address debtee, int256 amount, int deadline) public {
+    function transferCredit(address debtee, int amount, int deadline) public {
+        require(amount > 0, "You must transfer credits non negative");
         int debtorIn; int debtorOut; (debtorIn, debtorOut) = findCompanyBalance(msg.sender); // 债务人
         int debteeIn; int debteeOut; (debteeIn, debteeOut) = findCompanyBalance(debtee); // 债权人
         require(debtorIn - debtorOut >= amount, "Debtor does not have enough balance");
-
-        debtorOut += amount;
-        debteeIn += amount;
-        updateCompanyBalance(msg.sender, debtorIn, debtorOut);
-        updateCompanyBalance(debtee, debteeIn, debteeOut);
 
         nextReceiptId++;
 
@@ -257,6 +253,15 @@ contract Transaction18 {
         require(valid == 1 || valid == 2, "Only accepting or declining are allowed");
         findReceipt("t_in_receipt", toString(msg.sender), receiptId);
         require(receipt.valid == 0, "Receipt to be accepted should be pending");
+
+        if (valid == 1) {
+            int debtorIn; int debtorOut; (debtorIn, debtorOut) = findCompanyBalance(msg.sender); // 债务人
+            int debteeIn; int debteeOut; (debteeIn, debteeOut) = findCompanyBalance(debtee); // 债权人
+            debtorOut += receipt.amount;
+            debteeIn += receipt.amount;
+            updateCompanyBalance(msg.sender, debtorIn, debtorOut);
+            updateCompanyBalance(debtee, debteeIn, debteeOut);
+        }
 
         updateReceiptInt("t_in_receipt", toString(receipt.debtee), receiptId, "valid", valid, false);
         updateReceiptInt("t_out_receipt", toString(receipt.debtor), receiptId, "valid", valid, false);

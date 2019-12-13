@@ -2,33 +2,138 @@
 
 课程名称：区块链原理与技术             任课教师： 郑子彬
 
-## 项目背景
+## 一、方案设计
 
-a)   使用已有的开源区块链系统FISCO-BCOS，完成私有链的搭建以及新节点的加入。（截图说明搭建流程）
+### 合约机制
 
-b)   自行编写一个智能合约并部署到私有链上，同时完成合约调用。（截图说明部署流程）
+#### 信用凭证
 
-c)   使用命令查看一个区块，并对各个字段进行解释。
+信用凭证指企业间签发的应收账款单据，以及金融机构向车企签发的应收账款单据。简单来说，信用凭证指对企业未来盈利能力的衡量，或者企业债务。应收账款单据包含金额、逾期时间、和收款双方。
 
-## 合约设计
+信用凭证由债务方向债权方提供，表示债务方在一定时间前将会偿还。因此信用凭证的流动方向和人民币的流动方向相反：若债务方向债权方支付人民币欠款，债权方就要向债务方返还相应的信用凭证。
 
-### 信用转移
+#### 签发信用凭证
+
+信用凭证分借入和借出。企业在借出信用凭证时（欠债），不能超过自己所拥有的的信用凭证总额（借入-借出），以确保企业不会透支自己的信用。银行在衡量企业的信用评级时，不能只看信用凭证净值，因为信用凭证为 0 时不代表企业不欠钱，企业信用在未来的一段时间内，可能会因为信用凭证的逾期，导致信用为负。因此银行在评估企业信用时，需要查询企业的所有交易信息。
+
+#### 融资
+
+信用凭证的产生和转移都是一样的，只不过信用凭证的产生是从金融机构到企业，而转移是企业和企业间的转移。企业还可以向银行融资（借入人民币），操作不太一样，企业需要将自己的信用凭证转移给银行，银行向企业提供人民币贷款。到期时企业向银行还款，银行向企业返还信用凭证。
+
+### 账户体系
+
+本合约将用户分为以下几种
+
+#### 央行
+
+合约的管理员账户（部署合约时传入）由央行控制，允许央行审核、管理金融机构和政府的账号。审核机制允许央行审查账户的真实性，避免账户被冒名顶替。
+
+央行可以通过调用合约更新自己的信用凭证总量，和增发货币一样，该机制允许央行调节合约内的信用凭证总量，以便进行宏观调控。
+
+央行可以通过合约向银行派发信用凭证，并设置有效期。这种方式类似央行的逆回购操作，是允许央行调节市场中信用凭证总量的另一个手段。通过审查金融机构的担保能力和信誉，央行可以借此机制精准调控每个金融机构能派发的信用凭证总量。避免金融机构过量担保，产生造成经济不稳定的因素。
+
+央行具有合约数据库的管理权限，央行可以直接修改合约数据库，以便执行合约未提供的高级操作。通过 FISCO-BCOS 提供的 CRUD 合约来查询合约数据库的数据、对某个账号的交易进行管理。
+
+#### 政府
+
+政府账户只负责审核企业。由于企业比较多，管理员一般没有足够精力管理这么多账户，因此开设新的一个层级来管理企业。政府可以审核企业资质，准许企业进入区块链，也可以剥夺企业的区块链账户。
+
+政府账户也是一个普通的账户，可以接受和转移信用凭证，地方政府可以通过其区块链账户来进行融资操作。
+
+#### 金融机构
+
+金融机构可以从央行获得信用凭证，代表央行对金融机构的信用评级，允许金融机构最多担保多少款项。金融机构若遇到企业希望融资，可以查询企业的相关信息：企业的借入借出凭证总额、企业的借入借出交易细表。以便金融机构结合企业的实际情况和区块链内的信用派生情况，对企业的再盈利能力进行评估。
+
+金融机构在为企业融资时，可能需要再次验证企业的还款能力。金融机构可以查询区块链内所有企业的交易信息，因此金融机构可以沿信用凭证转移链查询到信用凭证来源，也就是查询到供应链上游企业是向哪个金融机构获取信用凭证的。通过认可供应链上游企业依赖的金融机构的信誉，这个金融机构便可以向该下游企业提供贷款。
+
+#### 企业
+
+企业可以查询自己的借入借出凭证，允许向其他企业转移信用凭证，前提是双方都要确认交易。这样供应链下游企业就可以借助供应链上游企业的信誉，融到人民币。
+
+### 案例
+
+#### 信用转移
 
 本合约可以用于记录企业产生的信用凭证、并通过支持信用凭证的转移来实现信用的下传，解决中小企业的融资困难问题。
 
 合约内只有信用转移的过程，车企承诺 1 年后可以获得 1000 万的营收，由银行确认后，车企将获得 1000 万的信用凭证。这 1000 万的信用凭证由银行担保，因此银行将转移 1000 万的信用凭证给该车企。车企为了购买轮胎，向轮胎厂承诺 1 年后支付 500 万，这表示车企将 1000 万的信用凭证中的 500 万转移给了轮胎厂：这样车企仅剩 500 万的信用凭证可供使用，确保车企不能透支和重复使用信用凭证。轮胎厂获得 500 万的信用凭证后，可向轮毂厂继续转移 200 万的信用凭证。这样信用就传递下去而且能确保信用真实、不可篡改、由银行担保、不会多次使用。
 
-### 贷款
+#### 贷款
 
 企业可以凭借信用凭证向银行融资，这样企业通过将自己的信用转移给银行来实现融资的记录。这样企业通过消耗自己的信用凭证获得融资，企业就无法再借助自己的信用凭证向其他公司转移，从而多次使用信用凭证。企业还款且银行确认后，银行可以向企业转移信用凭证，归还信用值，以便再借助这些信用进行转移、销毁以及再次的融资。
 
-## 方案设计
+### 数据流图
+
+下图描述了信用凭证和人民币贷款的流动方向。其中银行左侧的为信用凭证流入，银行右侧为人民币贷款流出。
+
+## 二、存储设计
+
+### 区块链合约存储
+
+合约采用数据库存储绝大多数内容，不过合约内仍然会包含一部分存储功能。
+
+合约内包含一些描述这些表的结构体：
+
+#### 实体
+
+```c#
+struct Company {
+    address addr; // 公司账号
+    string name; // 企业名称
+    bool bank; // 是否是金融机构，可以向公司颁发信用凭证
+    bool gov; // 是否是政府机关，有权授权将账户标记为公司账户
+
+    // 企业依据信用凭证产生的总欠款
+    // 大于 0 表示该公司还可以签发应收账款，否则表示公司必须向债权方还款（支付应收账款）
+    // 对于金融机构，表示能签发的最大信用额度
+
+    // 获得的尚未返还的信用凭证总量
+    int256 inBalance;
+    // 签发的尚未收回的信用凭证总量
+    int256 outBalance;
+}
+```
+
+#### 交易
+
+```c#
+struct Receipt {
+    address debtor; // 债务方地址
+    string debtorName; // 债务方名称
+    address debtee; // 债权方地址
+    string debteeName; // 债权方名称
+    int receiptId;  // 交易 ID
+    int amount;     // 交易金额
+    int deadline;   // 截止日期
+    int valid; // 0 - 待审核，1 - 接受，2 - 不接受, 3 - 还款阶段
+}
+```
+
+#### 交易 ID
+
+```solidity
+// 收据 id，每次创建由该公司的转出交易时加 1
+int nextReceiptId;
+```
+
+合约可以保证计算时不出现并发（出现并发就是分叉了，但不会有多线程的竞争问题），因此我们用一个全局变量记录交易 ID。
+
+#### 管理员帐号
+
+合约的管理员帐号在部署时约定，并存储在合约内：
+
+```c#
+// 央行账号
+// 1. 用于承认和撤销金融机构资格
+// 2. 用于承认政府和公司账号
+address adminAddr;
+```
 
 ### 区块链数据库表结构
 
-#### 单位表
+#### 实体表
 
-单位表保存区块链账户在该合约中的额外信息，包括：
+实体表保存区块链账户在该合约中的额外信息，和实体结构体 `struct Company` 对应。包括：
 
 | 列名       | 类型    | 含义                                                         |
 | ---------- | ------- | ------------------------------------------------------------ |
@@ -41,7 +146,7 @@ c)   使用命令查看一个区块，并对各个字段进行解释。
 
 #### 交易表
 
-由于 FISCO-BCOS 仅支持 key-value 型数据库，我们需要两张表来描述凭证交易。
+由于 FISCO-BCOS 仅支持 key-value 型数据库，我们需要两张表来描述凭证交易，“转入交易表”和“转出交易表”。两张表的区别在于转出交易表的主键为债务方地址 debtor；转入交易表的主键为债权方地址 debtee
 
 | 列名       | 类型              | 含义                                                         |
 | ---------- | ----------------- | ------------------------------------------------------------ |
@@ -56,166 +161,185 @@ c)   使用命令查看一个区块，并对各个字段进行解释。
 
 ### 服务器数据库表结构
 
+## 三、合约核心功能
 
-
-### 结构体
-
-#### 公司
-
-Company 结构体保存公司的一些信息，比如公司名称、公司的区块链账号、公司的总信用，以及公司未偿还的向外转移的信用凭证记录。
-
-```c#
-struct Company {
-    bool valid; // 公司是否存在
-    address addr; // 公司账号
-    string name; // 企业名称
-
-    // 企业依据信用凭证产生的总欠款
-    // 大于 0 表示该公司需要
-    int256 balance;
-
-    // 该公司对特定账户转移的信用凭证
-    mapping (address => Receipt) receipts;
-}
-```
-
-#### 收据
-
-保存公司的信用凭证转移记录，如果信用凭证被取消、还款，则会销毁收据。
-
-```cs
-struct Receipt {
-    bool valid; // 交易是否存在
-    int256 amount; // 应收账款
-}
-```
-
-### 事件
+### 合约事件
 
 该合约会创建一些事件，以便其他合约能参与到信用凭证的转移中来，提升合约的可扩展性。
 
 ```c#
-event CompanyRegistrationEvent(address addr, string name);
-event TransactionEvent(address from, address to, int256 amount);
-event FinanceEvent(address companyAddress, int256 amount);
-event PaybackEvent(address debtorAddr, address debteeAddr, int256 amount);
+// 公司注册事件
+event CompanyRegistration(address addr, string name);
+// 银行注册事件
+event BankRegistration(address addr, string name);
+// 政府注册事件
+event GovernmentRegistration(address addr, string name);
+
+// 信用凭证交易发起事件
+event TransactionBegin(address debtor, address debtee, int receiptId, int256 amount);
+// 信用凭证交易接受事件
+event TransactionEnd(address debtor, address debtee, int receiptId);
+
+// 信用凭证销毁发起事件
+event ReturnBegin(address debtor, address debtee, int receiptId, int amount);
+// 信用凭证销毁接受事件
+event ReturnEnd(address debtor, address debtee, int receiptId, int amount);
 ```
 
-### 合约创建
+### 金融机构和政府机构注册
 
-合约创建时需要指定银行账号。为了简化合约的编写，我指定了唯一的银行账号。日后可以通过管理员帐号添加或删除可信的第三方金融机构。
-
-```kotlin
-constructor (address _bankAddr) {
-    bankAddr = _bankAddr;
-    Company storage bank = companies[_bankAddr];
-    bank.valid = true;
-    bank.addr = bankAddr;
-    bank.balance = 10000000000000;
-    bank.name = "bank";
-}
-```
-
-### 公司注册
-
-公司创建了区块链账号后，自己调用并注册为公司。该过程不需要银行确认（或者可以改由政府确认，政府也有取消公司资质的权力）。
+根据设计，金融机构注册需要央行确认。通过在管理控制台注册时，管理控制台会提交注册信息给央行账户，央行账户确认后将注册信息提交到区块链上。政府机构账号同理。区块链合约注册函数的代码如下：
 
 ```c#
-// 公司账号调用本函数注册为公司
-// 每个账号只能注册一次，且公司名不能重复
-function registerAsCompany(string name) public returns(bool) {
-    if (companies[msg.sender].valid) {
-        return false;
+// 央行将指定账户设置为金融机构，信用额度
+function registerBank(address addr, string name) public {
+    require(msg.sender == adminAddr, "Only the Central Bank is allowed to banks registration");
+    insertCompany(addr, name, true, false, 0, 0);
+    emit BankRegistration(addr, name);
+}
+
+// 政府账号调用本函数将账户注册为公司
+// 每个账号只能注册一次
+function registerGovernment(address addr, string name) public {
+    require(msg.sender == adminAddr, "Only the Central Bank is allowed to governments registration");
+    insertCompany(addr, name, false, true, 0, 0);
+    emit GovernmentRegistration(addr, name);
+}
+```
+
+区块链合约保证只有央行账户可以调用该合约，将指定的金融机构账户设置为金融机构。
+
+### 企业注册
+
+企业注册和其他不同，企业注册需要政府审核，因此检查 `msg.sender` 是否是政府而不是央行。和银行注册类似，企业在管理控制台注册时，需要提供政府账号，将注册信息提交给政府审核。
+
+```csharp
+// 政府账号调用本函数将账户注册为公司
+// 每个账号只能注册一次
+function registerCompany(address addr, string name) public {
+    findCompany(msg.sender);
+    require(company.gov, "Only governments are allowed to companies registration");
+    insertCompany(addr, name, false, false, 0, 0);
+    emit CompanyRegistration(addr, name);
+}
+```
+
+### 转账
+
+转账分为提交转账和确认转账两个步骤。合约首先将转账提交到数据库中记录，允许债权人确认接受转账和拒绝转账。转账为等待接受、接受、拒绝的状态将被记录到数据库中。被拒绝的转账记录会保留。
+
+其中，提交转账不会改变双方的账款，只有债权方接受了转账后才会改变双方的账款。
+
+```csharp
+// 由第三方金融机构账户调用本函数，表示 debtor 公司向 debtee 公司转移信用凭证，
+// 或者 debtor 公司向 debtee 银行借款（将 debtor 的信用转移给银行表示融资）
+// 或者 debtor 银行向 debtee 公司提供信用凭证
+// debtor=msg.sender
+function transferCredit(address debtee, int amount, int deadline) public {
+    require(amount > 0, "You must transfer credits non negative");
+    int debtorIn; int debtorOut; (debtorIn, debtorOut) = findCompanyBalance(msg.sender); // 债务人
+    int debteeIn; int debteeOut; (debteeIn, debteeOut) = findCompanyBalance(debtee); // 债权人
+    require(debtorIn - debtorOut >= amount, "Debtor does not have enough balance");
+
+    nextReceiptId++;
+
+    insertReceipt("t_in_receipt", toString(debtee), msg.sender, debtee, nextReceiptId, amount, deadline, 0);
+    insertReceipt("t_out_receipt", toString(msg.sender), msg.sender, debtee, nextReceiptId, amount, deadline, 0);
+
+    emit TransactionBegin(msg.sender, debtee, nextReceiptId, amount);
+}
+
+// 由债权人调用，表示接受债务人转移的信用凭证
+// valid = 1 表示接受转移，valid = 2 表示拒绝转移
+function acceptTransferCredit(int receiptId, int valid) public {
+    require(valid == 1 || valid == 2, "Only accepting or declining are allowed");
+    findReceipt("t_in_receipt", toString(msg.sender), receiptId);
+    require(receipt.valid == 0, "Receipt to be accepted should be pending");
+
+    if (valid == 1) {
+        int debtorIn; int debtorOut; (debtorIn, debtorOut) = findCompanyBalance(msg.sender); // 债务人
+        int debteeIn; int debteeOut; (debteeIn, debteeOut) = findCompanyBalance(debtee); // 债权人
+        debtorOut += receipt.amount;
+        debteeIn += receipt.amount;
+        updateCompanyBalance(msg.sender, debtorIn, debtorOut);
+        updateCompanyBalance(debtee, debteeIn, debteeOut);
     }
 
-    Company storage company = companies[msg.sender];
-    company.valid = true;
-    company.addr = msg.sender;
-    company.name = name;
+    updateReceiptInt("t_in_receipt", toString(receipt.debtee), receiptId, "valid", valid, false);
+    updateReceiptInt("t_out_receipt", toString(receipt.debtor), receiptId, "valid", valid, false);
 
-    emit CompanyRegistrationEvent(msg.sender, name);
-    return true;
+    emit TransactionEnd(receipt.debtor, receipt.debtee, receiptId);
 }
 ```
 
-### 信用的转移
+### 还款
 
-信用的转移需要同时更新双方的总信用，并且额外记录信用凭证，这样可以确保最后能追踪信用的转移，并且取消信用凭证。
+还款分为提交还款和确认还款两个步骤。合约首先将还款提交到数据库中记录（通过更新转账数据库实现），允许债务人确认接受还款和拒绝还款。还款为等待接受、接受、拒绝的状态将被记录到数据库中。被拒绝的还款记录不像被拒绝的转账记录，不会被保留。
 
-该函数还支持融资：企业向银行转移信用后银行在区块链外向企业支付贷款。
+和转账一样，还款未被确认前不会改变双方的账款，只有债务方接受了还款后才会改变双方的账款。
 
-```cs
-// 由第三方金融机构账户调用本函数，表示 from 公司向 to 公司转移信用凭证，
-// 或者 from 公司向 to 银行借款（将 from 的信用转移给银行）
-function transferCredit(address from, address to, int256 amount) public returns(bool) {
-    Company storage fromCompany = companies[from];
-    if (!fromCompany.valid) return false;
-    Company storage toCompany = companies[to];
-    if (!toCompany.valid) return false;
-    address verifier = msg.sender;
-    // 确保只有银行才能调用该函数
-    if (bankAddr != verifier) return false;
-    if (fromCompany.balance < amount) return false;
-    fromCompany.balance -= amount;
-    toCompany.balance += amount;
-    fromCompany.receipts[to].valid = true;
-    fromCompany.receipts[to].amount += amount;
+```csharp
+// 由债权人调用，表示返还信用凭证
+// debtee 公司向 debtor 公司返还信用凭证（表示 debtor 公司向 debtee 公司支付货款）
+// debtee 公司向 debtor 银行返还信用凭证（表示期限前撤销信用凭证）
+// debtee 银行向 debtor 公司返还信用凭证（公司完成融资还款）
+function returnCredit(int receiptId, int amount) public {
+    findReceipt("t_in_receipt", toString(msg.sender), receiptId);
+    int debtorIn; int debtorOut; (debtorIn, debtorOut) = findCompanyBalance(receipt.debtor); // 债务人
+    int debteeIn; int debteeOut; (debteeIn, debteeOut) = findCompanyBalance(receipt.debtee); // 债权人
 
-    emit TransactionEvent(from, to, amount);
-    return true;
-}
-```
+    require(amount > 0, "You must return credits non negative");
+    require(receipt.amount >= amount, "Cannot return credit more than amount transfered at first");
+    require(receipt.valid == 1, "Receipt should be already accepted");
 
-### 信用的创建于销毁
+    updateReceiptInt("t_in_receipt", toString(receipt.debtee), receiptId, "valid", 3, false);
+    updateReceiptInt("t_out_receipt", toString(receipt.debtor), receiptId, "valid", 3, false);
 
-信用的创建于销毁和信用的转移是一样的，但是允许信用为负（表示尚未支付欠款）。
+    // 只更新一方的账款，用两侧账款差表示还款总额
+    updateReceiptInt("t_out_receipt", toString(receipt.debtor), receiptId, "amount", receipt.amount - amount, false);
 
-信用的创建是银行向公司转移信用的过程，销毁是公司向银行转移信用的过程。
-
-```c#
-// 由第三方金融机构账户调用该函数，表示为公司出具信用凭证
-// 融资所做的检查应该由第三方金融机构人工确认，本函数调用表示机构确认可以为该公司融资
-function finance(address companyAddress, int256 amount, int256 deadline) public returns(bool) {
-    // 确保只有银行才能调用该函数
-    if (bankAddr != msg.sender) return false;
-    // 确保目标账户是公司
-    Company storage company = companies[companyAddress];
-    Company storage bank = companies[bankAddr];
-    if (!company.valid || company.addr == bankAddr) return false;
-    // 增加公司信用
-    company.balance += amount;
-    // 仅仅确保总 balance 量不变
-    bank.balance -= amount;
-
-    bank.receipts[companyAddress].valid = true;
-    bank.receipts[companyAddress].amount += amount;
-
-    emit FinanceEvent(companyAddress, amount);
-    return true;
+    emit ReturnBegin(receipt.debtor, receipt.debtee, receiptId, amount);
 }
 
-// 债权人确认还款
-function payback(address debtorAddr, int256 amount) public returns(bool) {
-    Company storage debtee = companies[msg.sender]; // 债权人
-    Company storage debtor = companies[debtorAddr]; // 债务人
-    // 如果不存在借款信息
-    if (!debtee.receipts[debtorAddr].valid) return false;
-    // 确保还款数不超过欠款数
-    if (debtee.receipts[debtorAddr].amount < amount) return false;
-    debtee.balance += amount;
-    debtor.balance -= amount;
-    debtee.receipts[debtorAddr].amount -= amount;
-    if (debtee.receipts[debtorAddr].amount <= 0) {
-        // 若不再欠款，注销欠款信息
-        debtee.receipts[debtorAddr].valid = false;
-        debtee.receipts[debtorAddr].amount = 0;
+// 由债务人调用，表示接受债权人返还的信用凭证
+function acceptReturnCredit(int receiptId, int valid) public {
+    require(valid == 1 || valid == 2, "Only accepting or declining are allowed");
+
+    findReceipt("t_out_receipt", toString(msg.sender), receiptId);
+    Receipt memory outReceipt = receipt;
+    findReceipt("t_in_receipt", toString(receipt.debtee), receiptId);
+    Receipt memory inReceipt = receipt;
+    require(inReceipt.valid == outReceipt.valid, "Receipt states are nonconsistent");
+    require(inReceipt.valid == 3, "Only Receipts pending for returning are allowed to accept");
+    require(outReceipt.amount < inReceipt.amount, "Receipts states are nonconsistent");
+
+    int debtorIn; int debtorOut; (debtorIn, debtorOut) = findCompanyBalance(receipt.debtor); // 债务人
+    int debteeIn; int debteeOut; (debteeIn, debteeOut) = findCompanyBalance(receipt.debtee); // 债权人
+    int amount = inReceipt.amount - outReceipt.amount;
+
+    if (valid == 1) { // 接受返还信用凭证
+        // 同步两侧账款
+        updateReceiptInt("t_in_receipt", toString(receipt.debtee), receiptId, "amount", outReceipt.amount, true);
+        updateReceiptInt("t_out_receipt", toString(receipt.debtor), receiptId, "amount", outReceipt.amount, true);
+
+        debtorOut -= amount;
+        debteeIn -= amount;
+        updateCompanyBalance(receipt.debtor, debtorIn, debtorOut);
+        updateCompanyBalance(receipt.debtee, debteeIn, debteeOut);
+    } else { // 拒绝返还信用凭证，恢复账款
+        // 恢复单侧账款
+        updateReceiptInt("t_out_receipt", toString(receipt.debtor), receiptId, "amount", inReceipt.amount, true);
     }
-    emit PaybackEvent(debtorAddr, msg.sender, amount);
-    return true;
+
+    // 恢复账款到接受状态
+    updateReceiptInt("t_in_receipt", toString(receipt.debtee), receiptId, "valid", 1, false);
+    updateReceiptInt("t_out_receipt", toString(receipt.debtor), receiptId, "valid", 1, false);
+
+    emit ReturnEnd(receipt.debtor, receipt.debtee, receiptId, amount);
 }
 ```
 
-## 功能测试
+## 四、功能测试
 
 ### 创建用户
 
@@ -337,7 +461,11 @@ server 使用的即为管理员账户（央行账户）。
 
 ![image-20191213142519050](assets/image-20191213142519050.png)
 
-## 五、心得体会
+## 五、界面展示
+
+
+
+## 六、心得体会
 
 在设计完成区块链的供应链金融系统后，我的感触是这将大大简化企业开“证明”的手续。将信任人转移为信任机器后，如果大家都接受区块链，那么区块链的不可篡改的特性将确保区块链的所有记录都是“证明”。若相关法规得到完善，那么区块链证明将可直接成为企业间解决债务纠纷的直接有力的证据。正因如此，供应链下游的企业的融资需求将被释放。
 
