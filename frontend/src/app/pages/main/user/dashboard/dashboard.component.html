@@ -1,0 +1,47 @@
+<ng-container *ngIf="user">
+  <div nz-row>
+    <div nz-col [nzSpan]="16">
+      <h1>欢迎 {{user.name}}</h1>
+    </div>
+    <div nz-col [nzSpan]="8" class="text-right">
+      <button nz-button routerLink="/user/transfer">转移凭证</button>
+    </div>
+  </div>
+  <div nz-row>
+    <div nz-col [nzSpan]="8">
+      <app-statistic nzTitle="借入凭证（元）">{{user.inBalance}}</app-statistic>
+    </div>
+    <div nz-col [nzSpan]="8">
+      <app-statistic nzTitle="借出凭证（元）">{{user.outBalance}}</app-statistic>
+    </div>
+    <div nz-col [nzSpan]="8">
+      <app-statistic nzTitle="凭证余额（元）">{{user.inBalance - user.outBalance}}</app-statistic>
+    </div>
+  </div>
+  <div nz-row>
+    <nz-descriptions nzBordered>
+      <nz-descriptions-item nzTitle="账户地址" [nzSpan]="3">{{user.address}}</nz-descriptions-item>
+      <nz-descriptions-item nzTitle="账户公钥" [nzSpan]="3">
+        <div style="word-wrap: break-word; word-break: break-all;">{{user.publicKey}}</div>
+      </nz-descriptions-item>
+    </nz-descriptions>
+  </div>
+  <nz-tabset>
+    <nz-tab nzTitle="借入凭证">
+      <app-receipt-list state="in" [receipts]="user.inReceipts || []"></app-receipt-list>
+    </nz-tab>
+    <nz-tab nzTitle="借出凭证">
+      <app-receipt-list state="out" [receipts]="user.outReceipts || []"></app-receipt-list>
+    </nz-tab>
+    <nz-tab nzTitle="账户审核">
+      <app-audit-list></app-audit-list>
+    </nz-tab>
+    <nz-tab nzTitle="账户列表">
+      <app-audited-list></app-audited-list>
+    </nz-tab>
+  </nz-tabset>
+</ng-container>
+
+<ng-container *ngIf="!user">
+  您的账号等待审核中
+</ng-container>

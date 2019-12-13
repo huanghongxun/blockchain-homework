@@ -1,0 +1,18 @@
+<div style="position: relative;">
+  <div style="display: inline-block;">
+    <nz-breadcrumb>
+      <nz-breadcrumb-item *ngFor="let breadcrumb of breadcrumbs"><a
+        [routerLink]="breadcrumb.url">{{breadcrumb.label}}</a></nz-breadcrumb-item>
+    </nz-breadcrumb>
+  </div>
+  <div style="position: absolute; right: 0; top: 0; bottom: 0; display: flex;">
+    <ng-container *ngIf="template" [ngTemplateOutlet]="template"></ng-container>
+  </div>
+</div>
+<div class="inner-content">
+  <router-outlet></router-outlet>
+</div>
+
+<nz-modal [nzZIndex]="2000" [(nzVisible)]="isVisible" (nzOnOk)="acceptTransaction()" (nzOnCancel)="isVisible = false">
+  <label>您的私钥：<input nz-input [(ngModel)]="privateKey"></label>
+</nz-modal>

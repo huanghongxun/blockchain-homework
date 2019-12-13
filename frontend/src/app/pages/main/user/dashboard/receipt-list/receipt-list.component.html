@@ -1,0 +1,111 @@
+<nz-table [nzData]="receipts">
+  <thead>
+  <tr>
+    <th>债务方</th>
+    <th>债权方</th>
+    <th>金额</th>
+    <th>偿还日期</th>
+    <th>操作</th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr *ngFor="let receipt of receipts">
+    <td><span nz-tooltip [nzTooltipTitle]="receipt.debtorAddress">{{receipt.debtorName}}</span></td>
+    <td><span nz-tooltip [nzTooltipTitle]="receipt.debteeAddress">{{receipt.debteeName}}</span></td>
+    <td>{{receipt.amount}}</td>
+    <td>{{normalizeDateFormat(receipt.deadline)}}</td>
+    <td>
+      <ng-container *ngIf="state == 'in'">
+        <ng-container *ngIf="receipt.valid === 0">
+          <ng-container *ngIf="receipt.audited === undefined">
+            <a class="mr-8" (click)="acceptReceipt(receipt)">接受交易</a>
+            <a (click)="declineReceipt(receipt)">拒绝交易</a>
+          </ng-container>
+          <ng-container *ngIf="receipt.audited === true">
+            <i nz-icon nzType="check-circle" nzTheme="twotone" nzTwotoneColor="#52c41a"></i>
+          </ng-container>
+          <ng-container *ngIf="receipt.audited === false">
+            <i nz-icon nzType="close-circle" nzTheme="twotone" nzTwotoneColor="#eb2f96"></i>
+          </ng-container>
+        </ng-container>
+        <ng-container *ngIf="receipt.valid === 1">
+          <ng-container *ngIf="receipt.audited === undefined">
+            <a (click)="returnCredit(receipt)">返还</a>
+          </ng-container>
+          <ng-container *ngIf="receipt.audited === true">
+            <i nz-icon nzType="check-circle" nzTheme="twotone" nzTwotoneColor="#52c41a"></i>
+          </ng-container>
+          <ng-container *ngIf="receipt.audited === false">
+            <i nz-icon nzType="close-circle" nzTheme="twotone" nzTwotoneColor="#eb2f96"></i>
+          </ng-container>
+        </ng-container>
+        <ng-container *ngIf="receipt.valid === 2">
+          <label>交易被拒绝</label>
+        </ng-container>
+        <ng-container *ngIf="receipt.valid === 3">
+          <label>等待对方确认</label>
+        </ng-container>
+      </ng-container>
+      <ng-container *ngIf="state == 'out'">
+        <ng-container *ngIf="receipt.valid === 0">
+          <label>等待对方确认</label>
+        </ng-container>
+        <ng-container *ngIf="receipt.valid === 1">
+          <label>交易通过</label>
+        </ng-container>
+        <ng-container *ngIf="receipt.valid === 2">
+          <label>交易被拒绝</label>
+        </ng-container>
+        <ng-container *ngIf="receipt.valid === 3">
+          <ng-container *ngIf="receipt.audited === undefined">
+            <a class="mr-8" (click)="acceptReceipt(receipt)">接受返还</a>
+            <a (click)="declineReceipt(receipt)">拒绝返还</a>
+          </ng-container>
+          <ng-container *ngIf="receipt.audited === true">
+            <i nz-icon nzType="check-circle" nzTheme="twotone" nzTwotoneColor="#52c41a"></i>
+          </ng-container>
+          <ng-container *ngIf="receipt.audited === false">
+            <i nz-icon nzType="close-circle" nzTheme="twotone" nzTwotoneColor="#eb2f96"></i>
+          </ng-container>
+        </ng-container>
+      </ng-container>
+    </td>
+  </tr>
+  </tbody>
+</nz-table>
+
+<nz-modal [nzZIndex]="500" *ngIf="receipt" [(nzVisible)]="isVisible" (nzOnOk)="doReturnCredit()" nzTitle="返还信用凭证">
+  <div nz-row class="mb-8">返还信用凭证意味着您确认收到了债务人偿还的债务，请您再三确认此操作</div>
+  <div nz-row class="mb-8">
+    <div nz-col [nzSpan]="6">
+      <label>债务人名称</label>
+    </div>
+    <div nz-col [nzSpan]="14">
+      <label>{{receipt.debtorName}}</label>
+    </div>
+  </div>
+  <div nz-row class="mb-8">
+    <div nz-col [nzSpan]="6">
+      <label>债务人地址</label>
+    </div>
+    <div nz-col [nzSpan]="14">
+      <label>{{receipt.debtorAddress}}</label>
+    </div>
+    <div nz-row class="mb-8">
+      <div nz-col [nzSpan]="6">
+        <label>账务金额</label>
+      </div>
+      <div nz-col [nzSpan]="14">
+        <label>{{receipt.amount}}</label>
+      </div>
+    </div>
+    <div nz-row class="mb-8">
+      <div nz-col [nzSpan]="6">
+        <label>返还金额</label>
+      </div>
+      <div nz-col [nzSpan]="14">
+        <input nz-input [(ngModel)]="amount" placeholder="不能超过账务金额">
+      </div>
+    </div>
+  </div>
+</nz-modal>

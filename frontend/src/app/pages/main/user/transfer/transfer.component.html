@@ -1,0 +1,50 @@
+<form nz-form [formGroup]="form" (ngSubmit)="submitForm()">
+  <nz-form-item>
+    <nz-form-label [nzSm]="6" [nzXs]="24" nzFor="debtee" nzRequired>转至公司地址</nz-form-label>
+    <nz-form-control [nzSm]="14" [nzXs]="24" [nzErrorTip]="debteeErrorTpl" nzHasFeedback>
+      <input nz-input formControlName="debtee" id="debtee" />
+      <ng-template #debteeErrorTpl let-control>
+        <ng-container *ngIf="control.hasError('required')">
+          请输入转至公司地址
+        </ng-container>
+        <ng-container *ngIf="control.hasError('pattern')">
+          地址由 0x 开头和 40 个小写字母和数字组成
+        </ng-container>
+        <ng-container *ngIf="control.hasError('inexistent')">
+          地址不存在，请检查
+        </ng-container>
+      </ng-template>
+    </nz-form-control>
+  </nz-form-item>
+  <nz-form-item *ngIf="user">
+    <nz-form-label [nzSm]="6" [nzXs]="24">转至账户名称</nz-form-label>
+    <nz-form-control [nzSm]="14" [nzXs]="24">
+      <label>{{roleNames[user.role]}}: {{user.name}}</label>
+    </nz-form-control>
+  </nz-form-item>
+  <nz-form-item>
+    <nz-form-label [nzSm]="6" [nzXs]="24" nzFor="amount" nzRequired>转移凭证金额</nz-form-label>
+    <nz-form-control [nzSm]="14" [nzXs]="24" [nzErrorTip]="amountErrorTpl" nzHasFeedback>
+      <input nz-input formControlName="amount" id="amount" />
+      <ng-template #amountErrorTpl let-control>
+        <ng-container *ngIf="control.hasError('required')">
+          请输入转移金额
+        </ng-container>
+        <ng-container *ngIf="control.hasError('pattern')">
+          转移金额必须是数字
+        </ng-container>
+      </ng-template>
+    </nz-form-control>
+  </nz-form-item>
+  <nz-form-item>
+    <nz-form-label [nzSm]="6" [nzXs]="24" nzFor="deadline" nzRequired>截止返还日期</nz-form-label>
+    <nz-form-control [nzSm]="14" [nzXs]="24" nzHasFeedback>
+      <nz-date-picker formControlName="deadline"></nz-date-picker>
+    </nz-form-control>
+  </nz-form-item>
+  <nz-form-item nz-row class="register-area">
+    <nz-form-control [nzSpan]="14" [nzOffset]="6">
+      <button nz-button nzType="primary">转移</button>
+    </nz-form-control>
+  </nz-form-item>
+</form>

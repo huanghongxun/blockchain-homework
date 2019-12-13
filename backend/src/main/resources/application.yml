@@ -1,0 +1,69 @@
+spring:
+  data:
+    rest:
+      base-path: /api
+  jpa:
+    database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
+    hibernate:
+      ddl-auto: update
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/blockchain?useUnicode=true&characterEncoding=UTF-8&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC&nullCatalogMeansCurrent=true
+    username: blockchain
+    password:
+  http:
+    encoding:
+      force: true
+  redis:
+    host: localhost
+    port: 6379
+  main:
+    allow-bean-definition-overriding: true
+  session:
+    store-type: redis
+    redis:
+      flush-mode: on_save
+      namespace: spring:session
+
+server:
+  servlet:
+    session:
+      timeout: 30m
+  compression:
+    enabled: true
+  port: 8080
+
+logging:
+  level:
+    root: debug
+
+
+encrypt-type: # 0：普通， 1：国密
+  encrypt-type: 0
+
+group-channel-connections-config:
+  caCert: classpath:ca.crt
+  sslCert: classpath:node.crt
+  sslKey: classpath:node.key
+  all-channel-connections:
+    - group-id: 1 #group ID
+      connections-str:
+        - 127.0.0.1:20200 # node listen_ip:channel_listen_port
+        - 127.0.0.1:20201
+    - group-id: 2
+      connections-str:
+        - 127.0.0.1:20202 # node listen_ip:channel_listen_port
+        - 127.0.0.1:20203
+
+channel-service:
+  group-id: 1 # sdk实际连接的群组
+  agency-name: fisco # 机构名称
+
+accounts:
+  pem-file: 0x33edad3f4b0f0ef6fc9eeaaa203a61f782ac56cf.pem
+
+constants:
+  contractAddress: 123456
+  companyTable: t_company16
+  inReceiptTable: t_in_receipt16
+  outReceiptTable: t_out_receipt16

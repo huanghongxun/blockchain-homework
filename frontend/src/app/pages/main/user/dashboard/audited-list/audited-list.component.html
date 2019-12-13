@@ -1,0 +1,22 @@
+<nz-table [nzData]="auditedList">
+  <thead>
+  <tr>
+    <th>用户名</th>
+    <th>名称</th>
+    <th>地址</th>
+    <th>角色</th>
+    <th>操作</th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr *ngFor="let audited of auditedList">
+    <td>{{audited.username}}</td>
+    <td>{{audited.name}}</td>
+    <td>{{audited.address}}</td>
+    <td>{{roleNames[audited.role]}}</td>
+    <td>
+      <a (click)="transferCredit(audited)">转账</a>
+    </td>
+  </tr>
+  </tbody>
+</nz-table>

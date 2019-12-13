@@ -1,0 +1,111 @@
+<form nz-form [formGroup]="form" (ngSubmit)="submitForm()">
+  <nz-form-item>
+    <nz-form-label [nzSm]="6" [nzXs]="24" nzFor="role" nzRequired>注册类型</nz-form-label>
+    <nz-form-control [nzSm]="14" [nzXs]="24">
+      <nz-select nzPlaceHolder="请选择注册类型" formControlName="role" (ngModelChange)="updateType($event)">
+        <nz-option nzValue="ROLE_ADMIN" nzLabel="管理员账号"></nz-option>
+        <nz-option nzValue="ROLE_GOVERNMENT" nzLabel="政府账号"></nz-option>
+        <nz-option nzValue="ROLE_BANK" nzLabel="金融机构账号"></nz-option>
+        <nz-option nzValue="ROLE_COMPANY" nzLabel="企业账号"></nz-option>
+      </nz-select>
+    </nz-form-control>
+  </nz-form-item>
+  <nz-form-item>
+    <nz-form-label [nzSm]="6" [nzXs]="24" nzFor="username" nzRequired>用户名</nz-form-label>
+    <nz-form-control [nzSm]="14" [nzXs]="24" [nzErrorTip]="usernameErrorTpl" nzHasFeedback>
+      <input nz-input formControlName="username" id="username" />
+      <ng-template #usernameErrorTpl let-control>
+        <ng-container *ngIf="control.hasError('required')">
+          请输入用户名
+        </ng-container>
+        <ng-container *ngIf="control.hasError('pattern')">
+          用户名由 6~40 位的字母数字下划线构成
+        </ng-container>
+      </ng-template>
+    </nz-form-control>
+  </nz-form-item>
+  <nz-form-item>
+    <nz-form-label [nzSm]="6" [nzXs]="24" nzFor="name" nzRequired>名称</nz-form-label>
+    <nz-form-control [nzSm]="14" [nzXs]="24" [nzErrorTip]="nameErrorTpl" nzHasFeedback>
+      <input nz-input formControlName="name" id="name" />
+      <ng-template #nameErrorTpl let-control>
+        <ng-container *ngIf="control.hasError('required')">
+          请输入机构名称
+        </ng-container>
+        <ng-container *ngIf="control.hasError('pattern')">
+          名词不能超过 40 个字
+        </ng-container>
+      </ng-template>
+    </nz-form-control>
+  </nz-form-item>
+  <nz-form-item>
+    <nz-form-label [nzSm]="6" [nzXs]="24" nzFor="password" nzRequired>密码</nz-form-label>
+    <nz-form-control [nzSm]="14" [nzXs]="24" nzErrorTip="请输入密码" nzHasFeedback>
+      <input
+        nz-input
+        type="password"
+        id="password"
+        formControlName="password"
+        placeholder="你的高强度密码"
+        (ngModelChange)="updateConfirmValidator()"
+      />
+    </nz-form-control>
+  </nz-form-item>
+  <nz-form-item>
+    <nz-form-label [nzSm]="6" [nzXs]="24" nzFor="checkPassword" nzRequired>确认密码</nz-form-label>
+    <nz-form-control [nzSm]="14" [nzXs]="24" [nzErrorTip]="passwordErrorTpl" nzHasFeedback>
+      <input nz-input type="password" formControlName="checkPassword" id="checkPassword" />
+      <ng-template #passwordErrorTpl let-control>
+        <ng-container *ngIf="control.hasError('required')">
+          请再次输入你的密码
+        </ng-container>
+        <ng-container *ngIf="control.hasError('confirm')">
+          密码不一致
+        </ng-container>
+      </ng-template>
+    </nz-form-control>
+  </nz-form-item>
+  <nz-form-item *ngIf="type === 'ROLE_COMPANY'">
+    <nz-form-label [nzSm]="6" [nzXs]="24" nzFor="name">上级政府</nz-form-label>
+    <nz-form-control [nzSm]="14" [nzXs]="24">
+      <nz-select nzPlaceHolder="请选择上级政府" formControlName="government">
+        <nz-option *ngFor="let gov of govs" [nzValue]="gov.username" [nzLabel]="gov.name"></nz-option>
+      </nz-select>
+    </nz-form-control>
+  </nz-form-item>
+  <nz-form-item nz-row class="register-area">
+    <nz-form-control [nzSpan]="14" [nzOffset]="6">
+      <button nz-button nzType="primary">注册</button>
+    </nz-form-control>
+  </nz-form-item>
+</form>
+
+<nz-modal *ngIf="response" [(nzVisible)]="isVisible" [nzCancelDisabled]="true" (nzOnOk)="navigate()">
+  <div nz-row>
+    请您务必牢记您的账号信息
+  </div>
+  <div nz-row>
+    <div nz-col>
+      区块链地址
+    </div>
+    <div nz-col>
+      {{response.address}}
+    </div>
+  </div>
+  <div nz-row>
+    <div nz-col>
+      公钥
+    </div>
+    <div nz-col>
+      {{response.publicKey}}
+    </div>
+  </div>
+  <div nz-row>
+    <div nz-col>
+      私钥
+    </div>
+    <div nz-col>
+      {{response.privateKey}}
+    </div>
+  </div>
+</nz-modal>

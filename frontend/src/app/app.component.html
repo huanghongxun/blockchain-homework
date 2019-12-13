@@ -1,0 +1,78 @@
+<nz-layout class="fullscreen">
+  <nz-header>
+    <div style="margin-right: 20px;" class="logo"><img alt="gdoi-logo" src="./assets/img/gdoi-logo.png"></div>
+    <ul nz-menu nzTheme="light" nzMode="horizontal" class="float-left bg-transparent">
+      <li nz-menu-item routerLink="/" routerLinkActive="ant-menu-item-selected" [routerLinkActiveOptions]="{exact:
+        true}">首页
+      </li>
+    </ul>
+    <ul *ngIf="!userService.user" nz-menu nzTheme="light" nzMode="horizontal" class="float-right bg-transparent">
+      <li nz-menu-item routerLink="/user/login" routerLinkActive="ant-menu-item-selected">登录</li>
+      <li nz-menu-item routerLink="/user/register">注册</li>
+    </ul>
+    <ul *ngIf="userService.user as user" nz-menu nzTheme="light" nzMode="horizontal" class="float-right bg-transparent">
+      <li nz-menu-item (click)="navigateToUserProfile()">{{user.username}}</li>
+      <li nz-menu-item (click)="userService.logout()">登出</li>
+    </ul>
+  </nz-header>
+  <nz-spin [nzSpinning]="loading">
+    <nz-content class="outer-content">
+      <router-outlet></router-outlet>
+    </nz-content>
+  </nz-spin>
+  <footer>
+    <nz-footer *ngIf="showFooterNav" class="text-left bg-black">
+      <div nz-row class="w-p80 horizontal-center">
+        <div nz-col class="footer-col" [nzSpan]="5">
+          <h3 class="h6 g-color-white text-uppercase">关于GDOI</h3>
+          <ul>
+            <li><a routerLink="/ArticleView/ArticleDetail?articleTitle=简介">简介</a></li>
+            <li><a routerLink="/ArticleView/ArticleList?categoryName=关于GDOI&amp;subCategoryName=条例规定">条例规定</a></li>
+            <li><a routerLink="/ArticleView/ArticleList?categoryName=关于GDOI&amp;subCategoryName=技术规则">技术规则</a></li>
+            <li><a routerLink="/ArticleView/ArticleList?categoryName=关于GDOI&amp;subCategoryName=组织机构">组织机构</a></li>
+          </ul>
+        </div>
+
+        <div nz-col class="footer-col" [nzSpan]="5">
+          <h3 class="h6 g-color-white text-uppercase">新闻动态</h3>
+          <ul>
+            <li><a routerLink="/ArticleView/ArticleList?categoryName=新闻动态&amp;subCategoryName=最新公告">最新公告</a></li>
+            <li><a routerLink="/ArticleView/ArticleList?categoryName=新闻动态&amp;subCategoryName=赛事动态">赛事动态</a></li>
+            <li><a routerLink="/ArticleView/ArticleList?categoryName=新闻动态&amp;subCategoryName=总结分享">总结分享</a></li>
+            <li><a routerLink="/ArticleView/ArticleList?categoryName=新闻动态&amp;subCategoryName=其他">其他</a></li>
+          </ul>
+        </div>
+
+        <div nz-col class="footer-col" [nzSpan]="5">
+          <h3 class="h6 g-color-white text-uppercase">竞赛系统</h3>
+          <ul>
+            <li><a routerLink="/MatchView/Register">竞赛报名</a></li>
+            <li><a routerLink="/MatchView/RegisterSearch">报名查询</a></li>
+            <li><a routerLink="/ArticleView/ArticleList?categoryName=成绩公告">成绩公告</a></li>
+            <li><a routerLink="/MatchView/ScoreSearch">成绩查询</a></li>
+          </ul>
+        </div>
+
+        <div nz-col class="footer-col" [nzSpan]="5">
+          <h3 class="h6 g-color-white text-uppercase">联系方式</h3>
+          <ul>
+            <li><a routerLink="/ArticleView/ArticleDetail?articleTitle=广东省组织单位">广东省组织单位</a></li>
+            <li><a routerLink="/ArticleView/ArticleDetail?articleTitle=各市组织单位">各市组织单位</a></li>
+            <li><a routerLink="/ArticleView/ArticleDetail?articleTitle=各校负责人">各校负责人</a></li>
+          </ul>
+        </div>
+
+        <div nz-col class="footer-col" [nzSpan]="5">
+          <img src="./assets/img/gzh.jpg" alt="GDOI二维码" style="max-width: 150px; height: auto;">
+        </div>
+      </div>
+    </nz-footer>
+    <nz-footer style="background-color: #111 !important">
+      <div class="text-center">
+        <p style="color: #999; font-size: 15px;">
+          © 2020 - 广东省计算机学会 All Rights Reserved. 粤ICP备18157355号-1
+        </p>
+      </div>
+    </nz-footer>
+  </footer>
+</nz-layout>

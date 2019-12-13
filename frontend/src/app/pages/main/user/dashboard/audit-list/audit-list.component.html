@@ -1,0 +1,31 @@
+<nz-table [nzData]="auditList">
+  <thead>
+  <tr>
+    <th>用户名</th>
+    <th>名称</th>
+    <th>地址</th>
+    <th>角色</th>
+    <th>操作</th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr *ngFor="let audit of auditList">
+    <td>{{audit.username}}</td>
+    <td>{{audit.name}}</td>
+    <td>{{audit.address}}</td>
+    <td>{{roleNames[audit.role]}}</td>
+    <td>
+      <ng-container *ngIf="audit.audited === undefined">
+        <a class="mr-8" (click)="acceptUser(audit)">接受</a>
+        <a (click)="rejectUser(audit)">拒绝</a>
+      </ng-container>
+      <ng-container *ngIf="audit.audited === true">
+        <i nz-icon nzType="check-circle" nzTheme="twotone" nzTwotoneColor="#52c41a"></i>
+      </ng-container>
+      <ng-container *ngIf="audit.audited === false">
+        <i nz-icon nzType="close-circle" nzTheme="twotone" nzTwotoneColor="#eb2f96"></i>
+      </ng-container>
+    </td>
+  </tr>
+  </tbody>
+</nz-table>

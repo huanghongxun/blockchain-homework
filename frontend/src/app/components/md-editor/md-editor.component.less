@@ -1,0 +1,56 @@
+@import '../markdown/markdown.mixin.less';
+
+.CodeMirrorHeight(@height) {
+  min-height: @height;
+  height: @height;
+}
+
+.CodeMirrorOverride(@type, @height) {
+  .mdeditor-height-@{type} ~ .CodeMirror:not(.CodeMirror-fullscreen),
+  .mdeditor-height-@{type} ~ .CodeMirror:not(.CodeMirror-fullscreen) > .CodeMirror-scroll {
+    .CodeMirrorHeight(@height);
+  }
+}
+
+:host ::ng-deep {
+  .CodeMirrorOverride('small', 150px);
+  .CodeMirrorOverride('median', 300px);
+  .CodeMirrorOverride('large', 600px);
+
+  .editor-preview-active, .editor-preview-active-side {
+    .markdown();
+  }
+
+  textarea ~ .CodeMirror {
+    box-sizing: content-box;
+    .markdown-font();
+    .cm-header-1 {
+      font-size: 32px;
+      line-height: 1.25;
+    }
+    .cm-header-2 {
+      font-size: 24px;
+      line-height: 1.25;
+    }
+    .cm-header-3 {
+      font-size: 20px;
+      line-height: 1.25;
+    }
+    .cm-header-4 {
+      font-size: 16px;
+      line-height: 1.25;
+    }
+    .cm-header-5 {
+      font-size: 14px;
+      line-height: 1.25;
+    }
+    .cm-header-6 {
+      font-size: 13.6px;
+      line-height: 1.25;
+      color: #777;
+    }
+    .cm-comment {
+      background: unset;
+    }
+  }
+}
